@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -21,13 +21,35 @@ import Grid from "./layouts/Grid";
 import Header from "./Header";
 const DraggableArea = () => {
   // set the data to the state
-  const [items, setItems] = useState(data);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   // checking all items are selected or not
   const [allSelect, setAllSelect] = useState(false);
   // maintaining which image is dragging
   const [activeId, setActiveId] = useState(null);
   // maintaining which image is selected
   const [selectedImages, setSelectedImages] = useState([]);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const response = await fetch('https://picsum.photos/v2/list?page=2&limit=100');
+        if (!response.ok) {
+          throw new Error('Failed to fetch images');
+        }
+        const imageData = await response.json();
+        const imageUrls = imageData.map(image => image.download_url);
+        setItems(imageUrls);
+        setLoading(false); // Set loading to false after images are fetched
+      } catch (error) {
+        console.error('Error fetching images:', error);
+        setLoading(false); // Set loading to false in case of error
+      }
+    };
+
+    fetchImages();
+  }, []); // Empty dependency array to run effect only once when component mounts
+
 
   // handle the image selection and deselecting
   const handleSelect = (index) => {
